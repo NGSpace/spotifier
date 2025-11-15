@@ -1,0 +1,38 @@
+{
+	"schemaVersion": 1,
+	"id": "spotifier",
+	"version": "${version}",
+	"name": "spotifier",
+	"description": "This is an example description! Tell everyone what your mod is about!",
+	"authors": [
+		"Me!"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "MPL-2.0",
+	"icon": "assets/spotifier/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"dev.ngspace.hudder.spotifier.Spotifier"
+		],
+		"modmenu": [ "dev.ngspace.hudder.spotifier.config.SpotifierConfigModmenu" ]
+	},
+	"depends": {
+		"fabricloader": ">=0.17.3",
+		"minecraft": ">=1.21.9",
+		"java": ">=21",
+		"fabric-api": "*",
+		"hudder": "*"
+	},
+	"custom": {
+	  "modmenu": {
+	    "links": {
+	      "modmenu.discord": "https://ngspace.dev/discord"
+	    },
+	    "update_checker": true
+	  }
+	}
+}
