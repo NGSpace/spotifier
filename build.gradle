@@ -48,7 +48,7 @@ dependencies {
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
 	modImplementation "maven.modrinth:hudder:9.1.0-1.21.9"
-	modImplementation("com.terraformersmc:modmenu:16.0.0-rc.1")
+	modImplementation "com.terraformersmc:modmenu:16.0.0-rc.1"
 	
 	provided 'se.michaelthelin.spotify:spotify-web-api-java:9.3.0'
 	provided 'org.json:json:20250517'

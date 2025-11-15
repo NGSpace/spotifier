@@ -13,6 +13,6 @@ public record NowPlaying(
     String playlistUrl,
     String albumType,
     boolean shuffle,
-    boolean repeat,
+    String repeat,
     NextSong[] nextSongs
 ) {}

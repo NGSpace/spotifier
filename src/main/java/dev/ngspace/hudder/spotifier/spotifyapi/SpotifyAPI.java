@@ -14,8 +14,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-public class SpotifyAsyncApi {
-    private SpotifyAsyncApi() {}
+public class SpotifyAPI {
+    private SpotifyAPI() {}
 
     // --- HTTP + caching state -------------------------------------------------
 
@@ -76,13 +76,13 @@ public class SpotifyAsyncApi {
                     resolvePlaylistName(accessToken, ctx.playlistId, ctx.playlistName);
 
             // Fetch player state and queue
-            CompletableFuture<boolean[]> fState = fetchPlayerState(fPlayer);
+            CompletableFuture<PlayerState> fState = fetchPlayerState(fPlayer);
             CompletableFuture<NextSong[]> fNext = fetchQueue(fQueue);
 
             return CompletableFuture.allOf(fPlaylistName, fState, fNext)
                     .thenApply(__ -> {
                         String resolvedPlaylistName = fPlaylistName.join();
-                        boolean[] sr = fState.join();
+                        PlayerState sr = fState.join();
                         NextSong[] nextSongs = fNext.join();
 
                         return Optional.of(buildNowPlaying(parse, track, ctx, resolvedPlaylistName, sr, nextSongs));
@@ -115,7 +115,7 @@ public class SpotifyAsyncApi {
         int code = resp.statusCode();
         if (code == 204) return Optional.empty();
         if (code != 200) {
-            throw new UnsupportedOperationException("HTTP " + code + " - " + snippet(resp.body()));
+            throw new UnsupportedOperationException("HTTP " + code + " - " + resp.body());
         }
         return Optional.ofNullable(resp.body());
     }
@@ -199,28 +199,25 @@ public class SpotifyAsyncApi {
         return null;
     }
 
-    private static CompletableFuture<String> resolvePlaylistName(String accessToken,
-                                                                 String playlistId,
-                                                                 String existingName) {
+    private static CompletableFuture<String> resolvePlaylistName(String accessToken, String playlistId, String name) {
         if (playlistId == null || "collection:tracks".equals(playlistId)) {
-            return CompletableFuture.completedFuture(existingName);
+            return CompletableFuture.completedFuture(name);
         }
         return fetchPlaylistName(accessToken, playlistId).exceptionally(ex -> null);
     }
 
     // --- Fetch helpers: player state + queue + playlist name ------------------
 
-    private static CompletableFuture<boolean[]> fetchPlayerState(CompletableFuture<HttpResponse<String>> fPlayer) {
+    private static CompletableFuture<PlayerState> fetchPlayerState(CompletableFuture<HttpResponse<String>> fPlayer) {
         return fPlayer.thenApply(resp -> {
             boolean shuffle = false;
-            boolean repeat = false;
+            String repeat = "off";
             if (resp != null && resp.statusCode() == 200) {
                 JSONObject pj = new JSONObject(resp.body());
                 shuffle = pj.optBoolean("shuffle_state", false);
-                String repeatState = pj.optString("repeat_state", "off");
-                repeat = !"off".equalsIgnoreCase(repeatState);
+                repeat = pj.optString("repeat_state", "off");
             }
-            return new boolean[]{shuffle, repeat};
+            return new PlayerState(shuffle, repeat);
         });
     }
 
@@ -268,100 +265,40 @@ public class SpotifyAsyncApi {
                 });
     }
 
-    // --- Assembly -------------------------------------------------------------
+    private static NowPlaying buildNowPlaying(Current cur, TrackFields track, ContextFields ctx,
+    		String resolvedPlaylistName, PlayerState state, NextSong[] nextSongs) {
+        boolean shuffle = state.shuffle();
+        String repeat  = state.repeat();
+        
+        String playlistID = null;
+        String playlistName = null;
+        String playlistURL = null;
 
-    private static NowPlaying buildNowPlaying(Current cur,
-                                              TrackFields track,
-                                              ContextFields ctx,
-                                              String resolvedPlaylistName,
-                                              boolean[] state,
-                                              NextSong[] nextSongs) {
-        boolean shuffle = state[0];
-        boolean repeat  = state[1];
-
-        // No playlist context
-        if (ctx.playlistId == null) {
-            return new NowPlaying(
-                    cur.isPlaying, track.name, track.artists, track.album, track.trackUrl,
-                    cur.progressMs, track.durationMs,
-                    null, null, null,
-                    track.albumType,
-                    shuffle, repeat, nextSongs
-            );
+        if (ctx.playlistId != null) {
+            if ("collection:tracks".equals(ctx.playlistId)) {
+            	playlistID = ctx.playlistId;
+            	playlistName = "Liked Songs";
+            	playlistURL = URL_OPEN_LIKED;
+            } else {
+            	playlistID = ctx.playlistId;
+            	playlistName = resolvedPlaylistName;
+            	playlistURL = ctx.playlistUrl;
+            }
         }
 
-        // Liked Songs
-        if ("collection:tracks".equals(ctx.playlistId)) {
-            return new NowPlaying(
-                    cur.isPlaying, track.name, track.artists, track.album, track.trackUrl,
-                    cur.progressMs, track.durationMs,
-                    ctx.playlistId, "Liked Songs", URL_OPEN_LIKED,
-                    track.albumType,
-                    shuffle, repeat, nextSongs
-            );
-        }
-
-        // Real playlist
         return new NowPlaying(
                 cur.isPlaying, track.name, track.artists, track.album, track.trackUrl,
                 cur.progressMs, track.durationMs,
-                ctx.playlistId, resolvedPlaylistName, ctx.playlistUrl,
+                playlistID, playlistName, playlistURL,
                 track.albumType,
                 shuffle, repeat, nextSongs
         );
     }
 
-    // --- Utilities ------------------------------------------------------------
-
-    private static String snippet(String s) {
-        if (s == null) return "";
-        s = s.replaceAll("\\s+", " ").trim();
-        return s.length() > 180 ? s.substring(0, 180) + "…" : s;
-    }
-
     // --- Tiny carrier types to keep methods clean -----------------------------
-
-    private static final class Current {
-        final boolean isPlaying;
-        final long progressMs;
-        final JSONObject itemJson;
-        final JSONObject contextJson;
-
-        Current(boolean isPlaying, long progressMs, JSONObject itemJson, JSONObject contextJson) {
-            this.isPlaying = isPlaying;
-            this.progressMs = progressMs;
-            this.itemJson = itemJson;
-            this.contextJson = contextJson;
-        }
-    }
-
-    private static final class TrackFields {
-        final String name;
-        final long durationMs;
-        final String album;
-        final String albumType;
-        final String[] artists;
-        final String trackUrl;
-
-        TrackFields(String name, long durationMs, String album, String albumType, String[] artists, String trackUrl) {
-            this.name = name;
-            this.durationMs = durationMs;
-            this.album = album;
-            this.albumType = albumType;
-            this.artists = artists;
-            this.trackUrl = trackUrl;
-        }
-    }
-
-    private static final class ContextFields {
-        final String playlistId;   // null | "collection:tracks" | real ID
-        final String playlistUrl;  // null | open.spotify.com URL
-        final String playlistName; // null | "Liked Songs" | fetched name
-
-        ContextFields(String playlistId, String playlistUrl, String playlistName) {
-            this.playlistId = playlistId;
-            this.playlistUrl = playlistUrl;
-            this.playlistName = playlistName;
-        }
-    }
+    
+    public static record PlayerState(boolean shuffle, String repeat) {}
+    public static record Current(boolean isPlaying, long progressMs, JSONObject itemJson, JSONObject contextJson) {}
+    public static record TrackFields(String name, long durationMs, String album, String albumType, String[] artists, String trackUrl) {}
+    public static record ContextFields(String playlistId, String playlistUrl, String playlistName) {}
 }

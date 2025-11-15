@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 import dev.ngspace.hudder.spotifier.auth.SpotifyAuth;
 import dev.ngspace.hudder.spotifier.config.SpotifierConfig;
 import dev.ngspace.hudder.spotifier.spotifyapi.NowPlaying;
-import dev.ngspace.hudder.spotifier.spotifyapi.SpotifyAsyncApi;
+import dev.ngspace.hudder.spotifier.spotifyapi.SpotifyAPI;
 import io.github.ngspace.hudder.data_management.api.DataVariable;
 import io.github.ngspace.hudder.data_management.api.DataVariableRegistry;
 import io.github.ngspace.hudder.data_management.api.VariableTypes;
@@ -44,13 +44,13 @@ public class Spotifier implements ModInitializer {
 		DataVariableRegistry.registerVariable(k->playing, VariableTypes.OBJECT, "spotifier");
 
 		registerVariable(k->!playing.isPlaying(), VariableTypes.BOOLEAN, "spotifier_paused");
-		registerVariable(k->!playing.isPlaying(), VariableTypes.BOOLEAN, "spotifier_repeat");
-		registerVariable(k->!playing.isPlaying(), VariableTypes.BOOLEAN, "spotifier_shuffle");
-		
+		registerVariable(k->playing.shuffle(), VariableTypes.BOOLEAN, "spotifier_shuffle");
+
+		registerVariable(k->playing.repeat(), VariableTypes.STRING, "spotifier_repeat");
 		registerVariable(k->playing.trackName(), VariableTypes.STRING, "spotifier_track");
 		registerVariable(k->playing.albumName(), VariableTypes.STRING, "spotifier_album");
 		registerVariable(k->playing.albumType(), VariableTypes.STRING, "spotifier_album_type");
-		registerVariable(k->playing.albumType(), VariableTypes.STRING, "spotifier_playlist");
+		registerVariable(k->playing.playlistName(), VariableTypes.STRING, "spotifier_playlist");
 		
 		registerVariable(k->playing.artists(), VariableTypes.OBJECT, "spotifier_artists");
 
@@ -82,7 +82,7 @@ public class Spotifier implements ModInitializer {
 		RateLimitedVariable<Optional<NowPlaying>> getther = new RateLimitedVariable<Optional<NowPlaying>>(()-> {
 			synchronized (AUTH_LOCK) {
 				if (isValid())
-					return SpotifyAsyncApi.fetchAndReturnPrevious(auth.getAccessToken());
+					return SpotifyAPI.fetchAndReturnPrevious(auth.getAccessToken());
 				return Optional.empty();
 			}
 		});
