@@ -1,5 +1,7 @@
 package dev.ngspace.hudder.spotifier.spotifyapi;
 
+import java.time.Instant;
+
 public record NowPlaying(
     boolean isPlaying,
     String trackName,
@@ -14,5 +16,6 @@ public record NowPlaying(
     String albumType,
     boolean shuffle,
     String repeat,
-    NextSong[] nextSongs
+    NextSong[] nextSongs,
+    Instant pullTime
 ) {}

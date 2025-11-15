@@ -6,6 +6,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -128,7 +129,7 @@ public class SpotifyAPI {
         long progress = json.optLong("progress_ms", 0);
         JSONObject item = json.optJSONObject("item");
         JSONObject context = json.optJSONObject("context");
-        return new Current(isPlaying, progress, item, context);
+        return new Current(isPlaying, progress, item, context, Instant.now());
     }
 
     private static TrackFields extractTrack(JSONObject item) {
@@ -291,14 +292,15 @@ public class SpotifyAPI {
                 cur.progressMs, track.durationMs,
                 playlistID, playlistName, playlistURL,
                 track.albumType,
-                shuffle, repeat, nextSongs
+                shuffle, repeat, nextSongs,
+                cur.pullTime()
         );
     }
 
     // --- Tiny carrier types to keep methods clean -----------------------------
     
     public static record PlayerState(boolean shuffle, String repeat) {}
-    public static record Current(boolean isPlaying, long progressMs, JSONObject itemJson, JSONObject contextJson) {}
+    public static record Current(boolean isPlaying, long progressMs, JSONObject itemJson, JSONObject contextJson, Instant pullTime) {}
     public static record TrackFields(String name, long durationMs, String album, String albumType, String[] artists, String trackUrl) {}
     public static record ContextFields(String playlistId, String playlistUrl, String playlistName) {}
 }

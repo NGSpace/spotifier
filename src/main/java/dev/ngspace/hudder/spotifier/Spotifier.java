@@ -56,6 +56,7 @@ public class Spotifier implements ModInitializer {
 
 		registerVariable(k->playing.progressMs(), VariableTypes.NUMBER, "spotifier_progress");
 		registerVariable(k->playing.durationMs(), VariableTypes.NUMBER, "spotifier_duration");
+		registerVariable(k->Duration.between(playing.pullTime(), Instant.now()).toMillis(), VariableTypes.NUMBER, "spotifier_data_age");
 		
 		registerVariable(k->Arrays.stream(playing.nextSongs())
 				.map(song -> (ValueGetter) key -> 
