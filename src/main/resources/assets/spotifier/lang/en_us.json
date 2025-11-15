@@ -3,7 +3,9 @@
 	
 	"spotifier.spotify.client_id": "Client ID",
 	"spotifier.spotify.client_id.desc": "The Client ID of your Spotify app (Follow instructions on the Spotifier wiki)",
+	"spotifier.spotify.client_id.short": "The provided Client ID is too short or null!",
 	
 	"spotifier.spotify.pull_rate": "Pull rate (Milliseconds)",
-	"spotifier.spotify.pull_rate.desc": "How many milliseconds to wait before pulling data from Spotify's servers\n\u00A74WARNING - SETTING THIS TO A VALUE TOO LOW FOR EXTENDED PERIODS MIGHT GET YOU RATE LIMITED/IP BLOCKED BY SPOTIFY (For safe usage, keep above 1100)."
+	"spotifier.spotify.pull_rate.desc": "How many milliseconds to wait before pulling data from Spotify's servers\n\u00A74WARNING - SETTING THIS TO A VALUE TOO LOW FOR EXTENDED PERIODS MIGHT GET YOU RATE LIMITED/IP BLOCKED BY SPOTIFY (For safe usage, keep above 1100).",
+	"spotifier.spotify.pull_rate.low": "Pull rate must be above 500!"
 }

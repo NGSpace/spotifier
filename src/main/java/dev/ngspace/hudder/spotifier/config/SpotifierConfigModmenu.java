@@ -36,13 +36,14 @@ public class SpotifierConfigModmenu implements ModMenuApi {
 				Component.translatable("spotifier.spotify.client_id"))
 				.setHoverComponent(Component.translatable("spotifier.spotify.client_id.desc"))
 				.setSaveOperation(s->SpotifierConfig.client_id = s)
-				.setValidator(null)
+				.setValidator(id->id.length()<10?Component.translatable("spotifier.spotify.client_id.short"):null)
 				.build());
 		spotify.addOption(IntNGSMCConfigOption.builder((int) SpotifierConfig.pull_rate,
 				Component.translatable("spotifier.spotify.pull_rate"))
 				.setHoverComponent(Component.translatable("spotifier.spotify.pull_rate.desc"))
+				.setDefaultValue(1250)
 				.setSaveOperation(s->SpotifierConfig.pull_rate = s)
-				.setValidator(null)
+				.setValidator(r->r<500?Component.translatable("spotifier.spotify.pull_rate.low"):null)
 				.build());
 		
 		return builder.build();

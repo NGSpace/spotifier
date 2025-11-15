@@ -12,7 +12,7 @@ import net.fabricmc.loader.api.FabricLoader;
 
 public class SpotifierConfig {private SpotifierConfig() {}
 
-	public static String client_id = null;
+	public static String client_id = "";
 	public static String refresh_token = null;
 	public static long pull_rate = 1250;
 	
@@ -29,8 +29,7 @@ public class SpotifierConfig {private SpotifierConfig() {}
 		group.put("msdiff", pull_rate);
 		
         try (FileWriter file = new FileWriter(CONFIG_FILE)) {
-
-            file.write(group.toString());
+            file.write(group.toString(1));
             file.flush();
         } catch (IOException e) {
             e.fillInStackTrace();

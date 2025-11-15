@@ -5,6 +5,7 @@ import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -43,6 +44,7 @@ public class Spotifier implements ModInitializer {
 		DataVariableRegistry.registerVariable(k->isValid(), VariableTypes.BOOLEAN, "spotifier_connected");
 		DataVariableRegistry.registerVariable(k->playing, VariableTypes.OBJECT, "spotifier");
 
+		
 		registerVariable(k->!playing.isPlaying(), VariableTypes.BOOLEAN, "spotifier_paused");
 		registerVariable(k->playing.shuffle(), VariableTypes.BOOLEAN, "spotifier_shuffle");
 
@@ -105,7 +107,7 @@ public class Spotifier implements ModInitializer {
 	public void registerVariable(DataVariable<Object> variable, VariableTypes.Type<?> type, String... names) {
 		DataVariableRegistry.registerVariable(key->{
 			if (SpotifierConfig.client_id==null||!isValid())
-				throw new NullPointerException("Client ID not set");
+				throw new SpotifierException("Client ID not set");
 			if (playing==null)
 				return null;
 			return variable.getValue(key);
@@ -118,6 +120,9 @@ public class Spotifier implements ModInitializer {
 		synchronized (AUTH_LOCK) {
 			log("Getting new tokens");
 			
+			if (SpotifierConfig.client_id==null||SpotifierConfig.client_id.isBlank())
+				throw new SpotifierException("Client ID is null or empty");
+			
 			auth = new SpotifyAuth(SpotifierConfig.client_id, SpotifierConfig.uri, SpotifierConfig.port);
 
 			URI url = auth.getAuthURI(SCOPES);
@@ -128,6 +133,7 @@ public class Spotifier implements ModInitializer {
 				try {
 					auth.fetchTokenFromClientID(auth.awaitAuth());
 				} catch (Exception e) {
+					auth = null;
 					e.printStackTrace();
 				}
 			}).start();

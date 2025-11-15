@@ -62,6 +62,7 @@ public class SpotifyAPI {
 
         // Compose results
         return fCurrent.thenCompose(respCur -> {
+        	Instant pullTime = Instant.now();
             Optional<String> curBody = validateCurrentlyPlaying(respCur);
             if (curBody.isEmpty()) return CompletableFuture.completedFuture(Optional.empty());
 
@@ -86,7 +87,7 @@ public class SpotifyAPI {
                         PlayerState sr = fState.join();
                         NextSong[] nextSongs = fNext.join();
 
-                        return Optional.of(buildNowPlaying(parse, track, ctx, resolvedPlaylistName, sr, nextSongs));
+                        return Optional.of(buildNowPlaying(parse, track, ctx, resolvedPlaylistName, sr, nextSongs, pullTime));
                     });
         });
     }
@@ -129,7 +130,7 @@ public class SpotifyAPI {
         long progress = json.optLong("progress_ms", 0);
         JSONObject item = json.optJSONObject("item");
         JSONObject context = json.optJSONObject("context");
-        return new Current(isPlaying, progress, item, context, Instant.now());
+        return new Current(isPlaying, progress, item, context);
     }
 
     private static TrackFields extractTrack(JSONObject item) {
@@ -267,7 +268,7 @@ public class SpotifyAPI {
     }
 
     private static NowPlaying buildNowPlaying(Current cur, TrackFields track, ContextFields ctx,
-    		String resolvedPlaylistName, PlayerState state, NextSong[] nextSongs) {
+    		String resolvedPlaylistName, PlayerState state, NextSong[] nextSongs, Instant pulltime) {
         boolean shuffle = state.shuffle();
         String repeat  = state.repeat();
         
@@ -293,14 +294,14 @@ public class SpotifyAPI {
                 playlistID, playlistName, playlistURL,
                 track.albumType,
                 shuffle, repeat, nextSongs,
-                cur.pullTime()
+                pulltime
         );
     }
 
     // --- Tiny carrier types to keep methods clean -----------------------------
     
     public static record PlayerState(boolean shuffle, String repeat) {}
-    public static record Current(boolean isPlaying, long progressMs, JSONObject itemJson, JSONObject contextJson, Instant pullTime) {}
+    public static record Current(boolean isPlaying, long progressMs, JSONObject itemJson, JSONObject contextJson) {}
     public static record TrackFields(String name, long durationMs, String album, String albumType, String[] artists, String trackUrl) {}
     public static record ContextFields(String playlistId, String playlistUrl, String playlistName) {}
 }
