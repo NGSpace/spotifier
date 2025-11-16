@@ -5,7 +5,6 @@ import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -36,6 +35,14 @@ public class Spotifier implements ModInitializer {
 	private NowPlaying playing;
 	
 	private Instant lastRefresh = Instant.now();
+	
+	RateLimitedVariable<Optional<NowPlaying>> apifetcher = new RateLimitedVariable<Optional<NowPlaying>>(()-> {
+		synchronized (AUTH_LOCK) {
+			if (isValid())
+				return SpotifyAPI.fetchAndReturnPrevious(auth.getAccessToken());
+			return Optional.empty();
+		}
+	});
 
 	@Override
 	public void onInitialize() {
@@ -82,17 +89,9 @@ public class Spotifier implements ModInitializer {
 			e.printStackTrace();
 		}
 		
-		RateLimitedVariable<Optional<NowPlaying>> getther = new RateLimitedVariable<Optional<NowPlaying>>(()-> {
-			synchronized (AUTH_LOCK) {
-				if (isValid())
-					return SpotifyAPI.fetchAndReturnPrevious(auth.getAccessToken());
-				return Optional.empty();
-			}
-		});
-		
 		HudCompilationManager.addPreCompilerListener(com->{
 			if (isValid())
-				playing=getther.get().orElse(null);
+				playing=apifetcher.get().orElse(null);
 			if (Duration.between(lastRefresh, Instant.now()).toMinutes()>=10) {
 				try {
 					reauth();
