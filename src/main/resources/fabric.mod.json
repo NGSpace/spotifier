@@ -30,6 +30,7 @@
 	"custom": {
 	  "modmenu": {
 	    "links": {
+		  "modmenu.donate" : "https://coff.ee/ngspace",
 	      "modmenu.discord": "https://ngspace.dev/discord"
 	    },
 	    "update_checker": true
