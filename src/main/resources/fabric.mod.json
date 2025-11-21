@@ -3,13 +3,13 @@
 	"id": "spotifier",
 	"version": "${version}",
 	"name": "spotifier",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"description": "An addon for Hudder that implements Spotify support",
 	"authors": [
-		"Me!"
+		"NGSpace"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"homepage": "https://ngspace.dev",
+		"sources": "https://github.com/NGSpace/spotifier"
 	},
 	"license": "MPL-2.0",
 	"icon": "assets/spotifier/icon.png",
@@ -21,7 +21,7 @@
 		"modmenu": [ "dev.ngspace.hudder.spotifier.config.SpotifierConfigModmenu" ]
 	},
 	"depends": {
-		"fabricloader": ">=0.17.3",
+		"fabricloader": "*",
 		"minecraft": ">=1.21.9",
 		"java": ">=21",
 		"fabric-api": "*",
