@@ -21,7 +21,7 @@ import io.github.ngspace.hudder.data_management.api.VariableTypes;
 import io.github.ngspace.hudder.main.HudCompilationManager;
 import io.github.ngspace.hudder.utils.ValueGetter;
 import net.fabricmc.api.ModInitializer;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 
 public class Spotifier implements ModInitializer {
 	
