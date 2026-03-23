@@ -11,15 +11,15 @@ import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import dev.ngspace.hudder.api.variableregistry.DataVariable;
+import dev.ngspace.hudder.api.variableregistry.DataVariableRegistry;
+import dev.ngspace.hudder.api.variableregistry.VariableTypes;
+import dev.ngspace.hudder.main.HudCompilationManager;
 import dev.ngspace.hudder.spotifier.auth.SpotifyAuth;
 import dev.ngspace.hudder.spotifier.config.SpotifierConfig;
 import dev.ngspace.hudder.spotifier.spotifyapi.NowPlaying;
 import dev.ngspace.hudder.spotifier.spotifyapi.SpotifyAPI;
-import io.github.ngspace.hudder.data_management.api.DataVariable;
-import io.github.ngspace.hudder.data_management.api.DataVariableRegistry;
-import io.github.ngspace.hudder.data_management.api.VariableTypes;
-import io.github.ngspace.hudder.main.HudCompilationManager;
-import io.github.ngspace.hudder.utils.ValueGetter;
+import dev.ngspace.hudder.utils.ValueGetter;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.util.Util;
 
