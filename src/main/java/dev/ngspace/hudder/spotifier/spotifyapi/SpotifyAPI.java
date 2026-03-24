@@ -43,9 +43,9 @@ public class SpotifyAPI {
 
         if (IN_FLIGHT.compareAndSet(false, true)) {
             requestAsync(accessToken)
-            		.exceptionally(ex -> null)
+            		.exceptionally(_ -> null)
                     .thenAccept(CACHE::set)
-                    .whenComplete((__, ___) -> IN_FLIGHT.set(false));
+                    .whenComplete((_, _) -> IN_FLIGHT.set(false));
         }
 
         return previous;
@@ -82,7 +82,7 @@ public class SpotifyAPI {
             CompletableFuture<NextSong[]> fNext = fetchQueue(fQueue);
 
             return CompletableFuture.allOf(fPlaylistName, fState, fNext)
-                    .thenApply(__ -> {
+                    .thenApply(_ -> {
                         String resolvedPlaylistName = fPlaylistName.join();
                         PlayerState sr = fState.join();
                         NextSong[] nextSongs = fNext.join();
@@ -109,7 +109,7 @@ public class SpotifyAPI {
     }
 
     private static CompletableFuture<HttpResponse<String>> sendAsyncStringSafe(HttpRequest req) {
-        return sendAsyncString(req).exceptionally(ex -> null);
+        return sendAsyncString(req).exceptionally(_ -> null);
     }
 
     private static Optional<String> validateCurrentlyPlaying(HttpResponse<String> resp) {
@@ -205,7 +205,7 @@ public class SpotifyAPI {
         if (playlistId == null || "collection:tracks".equals(playlistId)) {
             return CompletableFuture.completedFuture(name);
         }
-        return fetchPlaylistName(accessToken, playlistId).exceptionally(ex -> null);
+        return fetchPlaylistName(accessToken, playlistId).exceptionally(_ -> null);
     }
 
     // --- Fetch helpers: player state + queue + playlist name ------------------

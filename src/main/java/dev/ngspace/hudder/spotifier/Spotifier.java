@@ -47,27 +47,27 @@ public class Spotifier implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		LOGGER.info("Loading Spotifier");
-		DataVariableRegistry.registerVariable(k->true, VariableTypes.BOOLEAN, "has_spotifier");
-		DataVariableRegistry.registerVariable(k->isValid(), VariableTypes.BOOLEAN, "spotifier_connected");
-		DataVariableRegistry.registerVariable(k->playing, VariableTypes.OBJECT, "spotifier");
+		DataVariableRegistry.registerVariable(_->true, VariableTypes.BOOLEAN, "has_spotifier");
+		DataVariableRegistry.registerVariable(_->isValid(), VariableTypes.BOOLEAN, "spotifier_connected");
+		DataVariableRegistry.registerVariable(_->playing, VariableTypes.OBJECT, "spotifier");
 
 		
-		registerVariable(k->!playing.isPlaying(), VariableTypes.BOOLEAN, "spotifier_paused");
-		registerVariable(k->playing.shuffle(), VariableTypes.BOOLEAN, "spotifier_shuffle");
+		registerVariable(_->!playing.isPlaying(), VariableTypes.BOOLEAN, "spotifier_paused");
+		registerVariable(_->playing.shuffle(), VariableTypes.BOOLEAN, "spotifier_shuffle");
 
-		registerVariable(k->playing.repeat(), VariableTypes.STRING, "spotifier_repeat");
-		registerVariable(k->playing.trackName(), VariableTypes.STRING, "spotifier_track");
-		registerVariable(k->playing.albumName(), VariableTypes.STRING, "spotifier_album");
-		registerVariable(k->playing.albumType(), VariableTypes.STRING, "spotifier_album_type");
-		registerVariable(k->playing.playlistName(), VariableTypes.STRING, "spotifier_playlist");
+		registerVariable(_->playing.repeat(), VariableTypes.STRING, "spotifier_repeat");
+		registerVariable(_->playing.trackName(), VariableTypes.STRING, "spotifier_track");
+		registerVariable(_->playing.albumName(), VariableTypes.STRING, "spotifier_album");
+		registerVariable(_->playing.albumType(), VariableTypes.STRING, "spotifier_album_type");
+		registerVariable(_->playing.playlistName(), VariableTypes.STRING, "spotifier_playlist");
 		
-		registerVariable(k->playing.artists(), VariableTypes.OBJECT, "spotifier_artists");
+		registerVariable(_->playing.artists(), VariableTypes.OBJECT, "spotifier_artists");
 
-		registerVariable(k->playing.progressMs(), VariableTypes.NUMBER, "spotifier_progress");
-		registerVariable(k->playing.durationMs(), VariableTypes.NUMBER, "spotifier_duration");
-		registerVariable(k->Duration.between(playing.pullTime(), Instant.now()).toMillis(), VariableTypes.NUMBER, "spotifier_data_age");
+		registerVariable(_->playing.progressMs(), VariableTypes.NUMBER, "spotifier_progress");
+		registerVariable(_->playing.durationMs(), VariableTypes.NUMBER, "spotifier_duration");
+		registerVariable(_->Duration.between(playing.pullTime(), Instant.now()).toMillis(), VariableTypes.NUMBER, "spotifier_data_age");
 		
-		registerVariable(k->Arrays.stream(playing.nextSongs())
+		registerVariable(_->Arrays.stream(playing.nextSongs())
 				.map(song -> (ValueGetter) key -> 
 					switch (key) {
 						case "track" -> song.trackName();
@@ -89,7 +89,7 @@ public class Spotifier implements ModInitializer {
 			e.printStackTrace();
 		}
 		
-		HudCompilationManager.addPreCompilerListener(com->{
+		HudCompilationManager.addPreCompilerListener(_->{
 			if (isValid())
 				playing=apifetcher.get().orElse(null);
 			if (Duration.between(lastRefresh, Instant.now()).toMinutes()>=10) {
