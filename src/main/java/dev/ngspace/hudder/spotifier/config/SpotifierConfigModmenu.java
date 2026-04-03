@@ -7,6 +7,7 @@ import dev.ngspace.hudder.spotifier.Spotifier;
 import dev.ngspace.ngsmcconfig.api.NGSMCConfigBuilder;
 import dev.ngspace.ngsmcconfig.options.IntNGSMCConfigOption;
 import dev.ngspace.ngsmcconfig.options.StringNGSMCConfigOption;
+import java.util.Objects;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
@@ -19,11 +20,14 @@ public class SpotifierConfigModmenu implements ModMenuApi {
 	
 	public Screen createConfigScreen(Screen screen) {
 		
+		String prev_client_id = SpotifierConfig.client_id;
+		
 		NGSMCConfigBuilder builder = new NGSMCConfigBuilder(screen);
 		
 		builder.setWriteOperation(()->{
 			try {
-				Spotifier.refreshAllTokens();
+				if (!Objects.equals(prev_client_id, SpotifierConfig.client_id))
+					Spotifier.apifetcher.refreshAllTokens();
 				SpotifierConfig.save();
 			} catch (Exception e) {
 				e.printStackTrace();
