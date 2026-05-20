@@ -44,11 +44,10 @@ dependencies {
 	
 	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
-	// Fabric API. This is technically optional, but you probably want it anyway.
 	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
 	implementation "maven.modrinth:hudder:10.0.0-26.1"
-	implementation "com.terraformersmc:modmenu:18.0.0-alpha.6"
+	compileOnly "com.terraformersmc:modmenu:18.0.0-alpha.6"
 	
 	provided 'org.json:json:20250517'
 	
