@@ -90,15 +90,20 @@ public class Spotifier implements ModInitializer {
 		}
 		
 		HudCompilationManager.addPreCompilerListener(_->{
-			if (isValid())
-				playing=apifetcher.get().orElse(null);
-			if (Duration.between(lastRefresh, Instant.now()).toMinutes()>=10) {
-				try {
-					reauth();
-				} catch (IOException e) {
-					e.printStackTrace();
+			try {
+				if (isValid())
+					playing=apifetcher.get().get();
+				if (Duration.between(lastRefresh, Instant.now()).toMinutes()>=10) {
+					try {
+						reauth();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					lastRefresh = Instant.now();
 				}
-				lastRefresh = Instant.now();
+			} catch (RuntimeException e) {
+				e.printStackTrace();
+				throw e;
 			}
 		});
 	}
