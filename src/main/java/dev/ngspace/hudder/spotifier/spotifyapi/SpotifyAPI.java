@@ -40,12 +40,24 @@ public class SpotifyAPI {
     /** Returns cached NowPlaying immediately and asynchronously fetches new data. */
     public static Optional<NowPlaying> fetchAndReturnPrevious(String accessToken) {
         Optional<NowPlaying> previous = CACHE.get();
+        // Defensive fallback in case a bad value was ever cached by an older build.
+        if (previous.isEmpty()) previous = Optional.empty();
 
         if (IN_FLIGHT.compareAndSet(false, true)) {
             requestAsync(accessToken)
-            		.exceptionally(_ -> null)
-                    .thenAccept(CACHE::set)
-                    .whenComplete((_, _) -> IN_FLIGHT.set(false));
+                    .thenAccept(result -> {
+                        // Never replace the Optional cache with a literal null.
+                        // Keeping the previous value also makes transient Spotify/network
+                        // failures harmless to HUD compilation.
+                        if (result.isPresent()) CACHE.set(result);
+                    })
+                    .whenComplete((_, error) -> {
+                        if (error != null) {
+                            System.err.println("Spotifier: Spotify API refresh failed: " + error.getMessage());
+                            error.printStackTrace();
+                        }
+                        IN_FLIGHT.set(false);
+                    });
         }
 
         return previous;

@@ -144,8 +144,22 @@ public class SpotifyAuth {
                 "&client_id=" + SpotifierUtil.encode(clientId);
 
         JSONObject json = SpotifierUtil.postForm("https://accounts.spotify.com/api/token", postData);
-        this.tokens = SpotifyToken.fromJSONObject(json);
-        SpotifierConfig.refresh_token = tokens.refreshToken();
+        SpotifyToken refreshed = SpotifyToken.fromJSONObject(json);
+
+        // Spotify is allowed to omit refresh_token on a refresh response. In that
+        // case the old refresh token remains valid and must be preserved.
+        if (refreshed.refreshToken() == null || refreshed.refreshToken().isBlank()) {
+            refreshed = new SpotifyToken(
+                    refreshed.accessToken(),
+                    refreshToken,
+                    refreshed.expiresIn(),
+                    refreshed.tokenType(),
+                    refreshed.scope()
+            );
+        }
+
+        this.tokens = refreshed;
+        SpotifierConfig.refresh_token = refreshed.refreshToken();
         SpotifierConfig.save();
     }
     
