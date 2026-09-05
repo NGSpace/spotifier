@@ -5,6 +5,7 @@ import com.terraformersmc.modmenu.api.ModMenuApi;
 
 import dev.ngspace.hudder.spotifier.Spotifier;
 import dev.ngspace.ngsmcconfig.api.NGSMCConfigBuilder;
+import dev.ngspace.ngsmcconfig.api.NGSMCConfigIcon;
 import dev.ngspace.ngsmcconfig.options.IntNGSMCConfigOption;
 import dev.ngspace.ngsmcconfig.options.StringNGSMCConfigOption;
 import net.minecraft.client.gui.screens.Screen;
@@ -30,7 +31,8 @@ public class SpotifierConfigModmenu implements ModMenuApi {
 			}
 		});
 		
-		var spotify = builder.createCategory(Component.translatable("spotifier.spotify"));
+		var spotify = builder.createCategory(Component.translatable("spotifier.spotify"),
+				new NGSMCConfigIcon.SpriteIcon("items", "item/trial_key"));
 		
 		spotify.addOption(StringNGSMCConfigOption.builder(SpotifierConfig.client_id,
 				Component.translatable("spotifier.spotify.client_id"))

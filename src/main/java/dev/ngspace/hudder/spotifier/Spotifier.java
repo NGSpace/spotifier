@@ -11,6 +11,7 @@ import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import dev.ngspace.hudder.Hudder;
 import dev.ngspace.hudder.api.variableregistry.DataVariable;
 import dev.ngspace.hudder.api.variableregistry.DataVariableRegistry;
 import dev.ngspace.hudder.spotifier.auth.SpotifyAuth;
@@ -19,7 +20,7 @@ import dev.ngspace.hudder.spotifier.spotifyapi.NowPlaying;
 import dev.ngspace.hudder.spotifier.spotifyapi.SpotifyAPI;
 import dev.ngspace.hudder.utils.ValueGetter;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.minecraft.util.Util;
 
 public class Spotifier implements ModInitializer {
@@ -88,23 +89,25 @@ public class Spotifier implements ModInitializer {
 			e.printStackTrace();
 		}
 
-		ClientTickEvents.START_CLIENT_TICK.register(_->{
-			try {
-				if (isValid())
-					playing=apifetcher.get().orElse(null);
-				if (Duration.between(lastRefresh, Instant.now()).toMinutes()>=30) {
-					try {
-						reauth();
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-					lastRefresh = Instant.now();
-				}
-			} catch (RuntimeException e) {
-				e.printStackTrace();
-				throw e;
-			}
-		});
+        ClientLifecycleEvents.CLIENT_STARTED.register(_->
+        	Hudder.config.compilationManager.addCompilationListener(_->{
+    			try {
+    				if (isValid())
+    					playing=apifetcher.get().orElse(null);
+    				if (Duration.between(lastRefresh, Instant.now()).toMinutes()>=30) {
+    					try {
+    						reauth();
+    					} catch (IOException e) {
+    						e.printStackTrace();
+    					}
+    					lastRefresh = Instant.now();
+    				}
+    			} catch (RuntimeException e) {
+    				e.printStackTrace();
+    				throw e;
+    			}
+        	})
+        );
 	}
 
 	public <T> DataVariable<T> wrap(DataVariable<T> variable) {

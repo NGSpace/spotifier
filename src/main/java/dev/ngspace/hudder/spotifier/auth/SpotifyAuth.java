@@ -11,6 +11,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 
 import com.sun.net.httpserver.HttpExchange;
@@ -163,7 +164,7 @@ public class SpotifyAuth {
         SpotifierConfig.save();
     }
     
-    public String getAccessToken() {
+    public @Nullable String getAccessToken() {
     	return tokens.accessToken();
     }
 }
