@@ -13,14 +13,13 @@ import org.slf4j.LoggerFactory;
 
 import dev.ngspace.hudder.api.variableregistry.DataVariable;
 import dev.ngspace.hudder.api.variableregistry.DataVariableRegistry;
-import dev.ngspace.hudder.api.variableregistry.VariableTypes;
-import dev.ngspace.hudder.main.HudCompilationManager;
 import dev.ngspace.hudder.spotifier.auth.SpotifyAuth;
 import dev.ngspace.hudder.spotifier.config.SpotifierConfig;
 import dev.ngspace.hudder.spotifier.spotifyapi.NowPlaying;
 import dev.ngspace.hudder.spotifier.spotifyapi.SpotifyAPI;
 import dev.ngspace.hudder.utils.ValueGetter;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.util.Util;
 
 public class Spotifier implements ModInitializer {
@@ -47,27 +46,27 @@ public class Spotifier implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		LOGGER.info("Loading Spotifier");
-		DataVariableRegistry.registerVariable(_->true, VariableTypes.BOOLEAN, "has_spotifier");
-		DataVariableRegistry.registerVariable(_->isValid(), VariableTypes.BOOLEAN, "spotifier_connected");
-		DataVariableRegistry.registerVariable(_->playing, VariableTypes.OBJECT, "spotifier");
+		DataVariableRegistry.registerBooleanVariable(_->true, "has_spotifier");
+		DataVariableRegistry.registerBooleanVariable(_->isValid(), "spotifier_connected");
+		DataVariableRegistry.registerObjectVariable(_->playing, "spotifier");
 
 		
-		registerVariable(_->!playing.isPlaying(), VariableTypes.BOOLEAN, "spotifier_paused");
-		registerVariable(_->playing.shuffle(), VariableTypes.BOOLEAN, "spotifier_shuffle");
+		DataVariableRegistry.registerBooleanVariable(wrap(_->!playing.isPlaying()), "spotifier_paused");
+		DataVariableRegistry.registerBooleanVariable(wrap(_->playing.shuffle()), "spotifier_shuffle");
 
-		registerVariable(_->playing.repeat(), VariableTypes.STRING, "spotifier_repeat");
-		registerVariable(_->playing.trackName(), VariableTypes.STRING, "spotifier_track");
-		registerVariable(_->playing.albumName(), VariableTypes.STRING, "spotifier_album");
-		registerVariable(_->playing.albumType(), VariableTypes.STRING, "spotifier_album_type");
-		registerVariable(_->playing.playlistName(), VariableTypes.STRING, "spotifier_playlist");
+		DataVariableRegistry.registerStringVariable(wrap(_->playing.repeat()), "spotifier_repeat");
+		DataVariableRegistry.registerStringVariable(wrap(_->playing.trackName()), "spotifier_track");
+		DataVariableRegistry.registerStringVariable(wrap(_->playing.albumName()), "spotifier_album");
+		DataVariableRegistry.registerStringVariable(wrap(_->playing.albumType()), "spotifier_album_type");
+		DataVariableRegistry.registerStringVariable(wrap(_->playing.playlistName()), "spotifier_playlist");
 		
-		registerVariable(_->playing.artists(), VariableTypes.OBJECT, "spotifier_artists");
+		DataVariableRegistry.registerObjectVariable(wrap(_->playing.artists()), "spotifier_artists");
 
-		registerVariable(_->playing.progressMs(), VariableTypes.NUMBER, "spotifier_progress");
-		registerVariable(_->playing.durationMs(), VariableTypes.NUMBER, "spotifier_duration");
-		registerVariable(_->Duration.between(playing.pullTime(), Instant.now()).toMillis(), VariableTypes.NUMBER, "spotifier_data_age");
+		DataVariableRegistry.registerNumberVariable(wrap(_->playing.progressMs()), "spotifier_progress");
+		DataVariableRegistry.registerNumberVariable(wrap(_->playing.durationMs()), "spotifier_duration");
+		DataVariableRegistry.registerNumberVariable(wrap(_->Duration.between(playing.pullTime(), Instant.now()).toMillis()), "spotifier_data_age");
 		
-		registerVariable(_->Arrays.stream(playing.nextSongs())
+		DataVariableRegistry.registerObjectVariable(wrap(_->Arrays.stream(playing.nextSongs())
 				.map(song -> (ValueGetter) key -> 
 					switch (key) {
 						case "track" -> song.trackName();
@@ -78,7 +77,7 @@ public class Spotifier implements ModInitializer {
 						default -> null;
 					}
 				)
-				.toArray(), VariableTypes.OBJECT, "spotifier_queue");
+				.toArray()), "spotifier_queue");
 		SpotifierConfig.read();
 		
 		try {
@@ -88,8 +87,8 @@ public class Spotifier implements ModInitializer {
 			log("Failed to auth with refresh token");
 			e.printStackTrace();
 		}
-		
-		HudCompilationManager.addPreCompilerListener(_->{
+
+		ClientTickEvents.START_CLIENT_TICK.register(_->{
 			try {
 				if (isValid())
 					playing=apifetcher.get().orElse(null);
@@ -108,14 +107,14 @@ public class Spotifier implements ModInitializer {
 		});
 	}
 
-	public void registerVariable(DataVariable<Object> variable, VariableTypes.Type<?> type, String... names) {
-		DataVariableRegistry.registerVariable(key->{
+	public <T> DataVariable<T> wrap(DataVariable<T> variable) {
+		return key->{
 			if (SpotifierConfig.client_id==null||!isValid())
 				throw new SpotifierException("Client ID not set");
 			if (playing==null)
 				return null;
 			return variable.getValue(key);
-		}, type, names);
+		};
 	}
 	
 	public static void log(Object obj) {LOGGER.info(String.valueOf(obj));}
