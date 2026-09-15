@@ -11,6 +11,8 @@ import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.mojang.blaze3d.Blaze3D;
+
 import dev.ngspace.hudder.Hudder;
 import dev.ngspace.hudder.api.variableregistry.DataVariable;
 import dev.ngspace.hudder.api.variableregistry.DataVariableRegistry;
@@ -133,7 +135,7 @@ public class Spotifier implements ModInitializer {
 
 			URI url = auth.getAuthURI(SCOPES);
 			log("Spotifier auth url:\n" + url);
-			Util.getPlatform().openUri(url);
+			Blaze3D.openUri(url);
 			
 			new Thread(()->{
 				try {
